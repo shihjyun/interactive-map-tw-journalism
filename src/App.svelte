@@ -1,10 +1,21 @@
 <script>
-	
+	import TaiwanMap from "./components/TaiwanMap.svelte";
+
+
+	let mapScope;
+
+  const changeVar = (town) => {
+    const slopeChart = d3.select(mapScope)
+
+    slopeChart
+      .selectAll('path')
+      .attr("fill", "rgba(16, 14, 14, 0.2)")
+  }
 </script>
 
 <main>
 	<h1>互動式台灣地圖</h1>
-	
+	<TaiwanMap/>
 </main>
 
 <style>
@@ -17,6 +28,7 @@
 
 	h1 {
 		color: black;
+		font-family: "Noto Sans TC";
 		text-transform: uppercase;
 		font-size: 4em;
 		font-weight: 100;
