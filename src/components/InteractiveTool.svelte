@@ -7,7 +7,7 @@
   let supportRate18, supportRate20, supportRateRecall
 
   // select box setting
-  let inputStyles = 'border-color: #E42F8C; border-style: solid; border-width: 0 0 2px 0;'
+  let inputStyles = 'border-color: #4A75B6; border-style: solid; border-width: 0 0 2px 0;'
   let varList = $itemsList
 
 
