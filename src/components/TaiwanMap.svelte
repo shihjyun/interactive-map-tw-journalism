@@ -23,7 +23,11 @@
 
     varColorScale = varColorScaleGenerator(mapSelectedSheetData, reactiveVar)
 
-    console.log(enterTownPaths)
+    if(enterTownPaths){
+      enterTownPaths
+        .attr("fill", d => $selectedVar[0] !== 'nothing' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
+    }
+
   }
 
   $: {
@@ -119,8 +123,6 @@
         .attr("fill", d => $selectedVar[0] !== 'nothing' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
         .style("opacity", 0)
         .on("click", function () { backToCounty() })
-
-    console.log(enterTownPaths)
 
 
     twProjection.fitExtent(
