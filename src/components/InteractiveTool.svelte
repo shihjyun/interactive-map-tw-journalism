@@ -3,12 +3,8 @@
   import { itemsList } from '../stores/MapInfo.js'
   import { selectedVar } from '../stores/MapInfo.js'
 
-  // the values need to show on interactive component
-  let supportRate18, supportRate20, supportRateRecall
-
   // select box setting
   let inputStyles = 'border-color: #4A75B6; border-style: solid; border-width: 0 0 2px 0;'
-  let varList = $itemsList
 
 
   let selectedValue = 'OOO';
@@ -28,7 +24,7 @@
   <div class="slope-highlighter">
     <p>請選擇變數：</p>
     <div class="select-theme">
-      <Select items={varList} 
+      <Select items={$itemsList} 
               isSearchable={false}
               {inputStyles}
               isClearable={false}

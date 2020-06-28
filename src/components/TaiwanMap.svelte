@@ -1,26 +1,16 @@
 <script>
-  import { onMount, afterUpdate } from 'svelte';
+  import { onMount } from 'svelte';
   import * as d3 from 'd3';
   import * as topojson from 'topojson';
   import InteractiveTool from "./InteractiveTool.svelte";
-  import { selectedVar } from '../stores/MapInfo.js'
+  import { selectedVar, itemsList } from '../stores/MapInfo.js'
 
+  let googleSheetData, mapSelectedSheetData, varColorScale, enterTownPaths
 
-  let twTownData
-  let twTownFeatures
-  // let varColorScale
-
-  const twProjection = d3.geoMercator()
-      .scale(6000)
-      .center([122, 23.84394])
-
-  const twgeoPath = d3.geoPath()
-      .projection( twProjection );
-
-  const varColorScaleGenerator = (gd, varName) => {
+  const varColorScaleGenerator = (gd) => {
     
-    const minVarValue = d3.min(gd.map(d => d.properties[varName]))
-    const maxVarValue = d3.max(gd.map(d => d.properties[varName]))
+    const minVarValue = d3.min([...gd].map(d => d[1]))
+    const maxVarValue = d3.max([...gd].map(d => d[1]))
 
     return d3.scaleLinear()
       .domain([minVarValue, maxVarValue])
@@ -28,11 +18,12 @@
   }
 
   const changeVar = (reactiveVar) => {
-    let varColorScale = varColorScaleGenerator(twTownFeatures, reactiveVar)
 
-    d3.selectAll("path")
-      .data(twTownFeatures)
-      .attr("fill", d => varColorScale(d.properties[reactiveVar]))
+    mapSelectedSheetData = Object.assign(new Map(googleSheetData.map(d => [d['townid'], +d[reactiveVar]])))
+
+    varColorScale = varColorScaleGenerator(mapSelectedSheetData, reactiveVar)
+
+    console.log(enterTownPaths)
   }
 
   $: {
@@ -42,36 +33,129 @@
   }
 
   onMount(async () => {
-    const response = await fetch("./data/tw_town_adjusted_bind_data.json");
-    twTownData = await response.json();
-    twTownFeatures = topojson.feature(twTownData, twTownData.objects.tw_town_adjusted_bind_data).features
+  // canvas dimension
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
-    const svg = d3.select("svg")
+  // attribute data input
+  const res = await fetch(`http://gsx2json.com/api?id=1TY3eMLbH-WvXku5BLK9Nco6-u1PHj0q8Clkk06zG9eo&columns=false`);
+  googleSheetData = await res.json().then(d => d.rows);
+  
+  itemsList.update(() => {
+    const colList = Object.keys(googleSheetData[0]).map(d => ({"value": d, "label": d}))
+            return colList;
+        })
 
-    svg.selectAll( "path" )
-      .data(twTownFeatures)
-      .enter()
-      .append("path" )
-      .attr("id", d => d.properties['TOWNNAME'])
-      .attr("fill", "#E3DBD9")
-      .attr("stroke", "#333")
-      .attr("stroke-width", 0.5)
-      .attr("d", twgeoPath );
+  // geometry data input
+  const twTownResponse = await fetch("./data/tw_town.json")
+  const twTownData = await twTownResponse.json()
+  const twTownFeatures = topojson.feature(twTownData, twTownData.objects.tw_town).features
+
+  const twCountyResponse = await fetch("./data/tw_county.json")
+  const twCountyData = await twCountyResponse.json()
+  const twCountyFeatures = topojson.feature(twCountyData, twCountyData.objects.tw_county).features
+
+  // projection setting
+  const twProjection = d3.geoMercator()
+      .translate([width / 2, height / 2])
+      .scale(10000)
+      .center([121, 23.84394])
+
+  const twGeoPath = d3.geoPath()
+      .projection( twProjection )
+  
+  // draw tw county map
+  const svg = d3.select(".interactive-map svg")
+    .attr("width", width)
+    .attr("height", height)
+
+  const counties = svg.selectAll(".county")
+    .data(twCountyFeatures)
+    .enter()
+    .append("path")
+    .attr("class", "county")
+    .attr("id", d => d.properties['COUNTYID'])
+    .attr("fill", "#25877F")
+    .attr("opacity", 1)
+    .attr("stroke", "#333")
+    .attr("stroke-width", 0.5)
+    .attr("d", twGeoPath)
+    .on("click", function (d) { countyZoom(d.properties.COUNTYID) })
+
+
+
+  // zoom func
+  function backToCounty() {
+    const t = d3.transition().duration(800)
+
+    twProjection.scale(10000).translate([width / 2, height / 2])
+
+    counties.transition(t)
+        .attr("d", twGeoPath)
+        .attr("opacity", 1)
+        .style("fill", "#25877F")
+
+    svg.selectAll(".town")
+        .data([])
+        .exit().transition(t)
+        .attr("d", twGeoPath)
+        .style("opacity", 0)
+        .remove()
+  }
+
+  function countyZoom(COUNTYID) {
+    const county = twCountyFeatures.find(function (d) { return d.properties.COUNTYID === COUNTYID })
+    const countyTowns = twTownFeatures.filter(function (d) { return d.properties.COUNTYID === COUNTYID })
+
+    const t = d3.transition().duration(800)
+
+    const towns = svg.selectAll('.town')
+        .data(countyTowns, function (d) { return d.properties.COUNTYID })
+
+    enterTownPaths = towns.enter().append('path')
+        .attr("id", d => d.properties['TOWNID'])
+        .attr("class", "town")
+        .attr("d", twGeoPath)
+        .attr("fill", d => $selectedVar[0] !== 'nothing' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
+        .style("opacity", 0)
+        .on("click", function () { backToCounty() })
+
+    console.log(enterTownPaths)
+
+
+    twProjection.fitExtent(
+        [[30, 30], [width - 30, height - 30]],
+        county
+    )
+
+    counties.transition(t)
+        .attr('d', twGeoPath)
+        .attr("opacity", 0.5)
+        .style('fill', '#25877F')
+
+    enterTownPaths.transition(t)
+        .attr('d', twGeoPath)
+        .attr("stroke", "#333")
+        .attr("stroke-width", 0.5)
+        .style('opacity', 1)
+
+    towns.exit().transition(t)
+        .attr('d', twGeoPath)
+        .style('opacity', 0)
+        .remove()
+    }
   })
 
 </script>
 
-<div class="map">
-  <svg width={700}
-     height={600}
-     viewBox={`0 0 ${700} ${600}`}
-     id ="tw-map"></svg>
+<div class="interactive-map">
+  <svg id ="tw-map"></svg>
 </div>
 <InteractiveTool/>
 
 
 <style>
-  .map{
+  .interactive-map{
     margin: 0 auto;
   }
 </style>
