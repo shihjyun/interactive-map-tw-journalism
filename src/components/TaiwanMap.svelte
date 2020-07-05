@@ -4,6 +4,7 @@
   import * as topojson from 'topojson';
   import InteractiveTool from "./InteractiveTool.svelte";
   import { selectedVar, itemsList } from '../stores/MapInfo.js'
+  import gs2json from "../helper/gs2json.js";
 
   let googleSheetData, mapSelectedSheetData, varColorScale, enterTownPaths
 
@@ -42,8 +43,9 @@
   const height = window.innerHeight;
 
   // attribute data input
-  const res = await fetch(`http://gsx2json.com/api?id=1TY3eMLbH-WvXku5BLK9Nco6-u1PHj0q8Clkk06zG9eo&columns=false`);
-  googleSheetData = await res.json().then(d => d.rows);
+  const url = "https://spreadsheets.google.com/feeds/list/1TY3eMLbH-WvXku5BLK9Nco6-u1PHj0q8Clkk06zG9eo/1/public/values?alt=json"
+  const res = await fetch(url);
+  googleSheetData = await res.json().then(d => gs2json(d));
   
   itemsList.update(() => {
     const colList = Object.keys(googleSheetData[0]).map(d => ({"value": d, "label": d}))
