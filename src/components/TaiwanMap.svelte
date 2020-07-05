@@ -86,7 +86,10 @@
     .attr("stroke", "#333")
     .attr("stroke-width", 0.5)
     .attr("d", twGeoPath)
+    .style("cursor", "pointer")
     .on("click", function (d) { countyZoom(d.properties.COUNTYID) })
+    .on("mouseover", handleCountyMouseOver)
+    .on("mouseout", handleCountyMouseOut)
 
 
 
@@ -99,13 +102,13 @@
     counties.transition(t)
         .attr("d", twGeoPath)
         .attr("opacity", 1)
-        .style("fill", "#25877F")
+        .attr("fill", "#25877F")
 
     svg.selectAll(".town")
         .data([])
         .exit().transition(t)
         .attr("d", twGeoPath)
-        .style("opacity", 0)
+        .attr("opacity", 0)
         .remove()
   }
 
@@ -123,7 +126,7 @@
         .attr("class", "town")
         .attr("d", twGeoPath)
         .attr("fill", d => $selectedVar[0] !== 'nothing' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
-        .style("opacity", 0)
+        .attr("opacity", 0)
         .on("click", function () { backToCounty() })
 
 
@@ -135,20 +138,30 @@
     counties.transition(t)
         .attr('d', twGeoPath)
         .attr("opacity", 0.5)
-        .style('fill', '#25877F')
+        .attr('fill', '#25877F')
 
     enterTownPaths.transition(t)
         .attr('d', twGeoPath)
         .attr("stroke", "#333")
         .attr("stroke-width", 0.5)
-        .style('opacity', 1)
+        .attr('opacity', 1)
 
     towns.exit().transition(t)
         .attr('d', twGeoPath)
-        .style('opacity', 0)
+        .attr('opacity', 0)
         .remove()
     }
   })
+
+  // mouse 
+
+  function handleCountyMouseOver(d) {
+    d3.select(this)
+  }
+
+  function handleCountyMouseOut(d) {
+    d3.select(this)
+  }
 
 </script>
 
