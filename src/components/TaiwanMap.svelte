@@ -205,13 +205,13 @@
   </div>
   <div class="town-tooltip">
      <p>{hoverTown}</p>
-     <p>{$selectedVar}</p>
+     <InteractiveTool/>
      <div id="var-value">
        <p>{varValue}</p>
      </div>
   </div>
 </div>
-<InteractiveTool/>
+
 
 
 <style>
@@ -223,7 +223,7 @@
     text-align: center;
     display: none;
     width: 200px;
-    top: 65%;
+    top: 15%;
     right: 10%;
     position: fixed;
     z-index: 2;
@@ -249,7 +249,7 @@
   .county-tooltip{
     display: none;
     width: 140px;
-    top: 65%;
+    top: 15%;
     right: 10%;
     position: fixed;
     z-index: 2;

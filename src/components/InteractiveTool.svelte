@@ -3,10 +3,10 @@
   import { itemsList, selectedVar } from '../stores/MapInfo.js'
 
   // select box setting
-  let inputStyles = 'border-color: #25877F; border-style: solid; border-width: 0 0 2px 0;'
+  let inputStyles = 'border-color: #25877F; border-style: solid; border-width: 0 0 0 0;'
 
 
-  let selectedValue = 'OOO';
+  let selectedValue = '選擇變數';
 
   // the parameters need to send to stores
   const handleSelectedTown = (e) => {
@@ -21,7 +21,6 @@
 
 <div class="interactive-panel">
   <div class="slope-highlighter">
-    <p>變數選擇：</p>
     <div class="select-theme">
       <Select items={$itemsList} 
               isSearchable={false}
@@ -38,9 +37,6 @@
 
 <style>
 .interactive-panel{
-  top: 60%;
-  right: 10%;
-  position: fixed;
   z-index: 2;
 }
 p{
@@ -51,8 +47,11 @@ p{
 .select-theme{
   font-family: 'Noto Sans TC';
   margin: 0;
+  color: #25877F;
   --itemPadding: 0;
   --inputFontSize: 1.2 em;
+  --itemColor: #25877F;
+  --listBackground: rgba(255, 255, 255, 0.85);
   --height: 1 em;
   --inputPadding: 0;
   --borderRadius: 0;
@@ -66,5 +65,8 @@ p{
 .select-theme :global(.selectContainer input){
   --padding: 1px 1px;
   background: none;
+}
+.select-theme :global(.selectContainer div:nth-child(4)){
+  left: -100% !important;
 }
 </style>
