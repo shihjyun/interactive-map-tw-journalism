@@ -7,6 +7,10 @@
   import gs2json from "../helper/gs2json.js";
 
   let googleSheetData, mapSelectedSheetData, varColorScale, enterTownPaths
+  let hoverCounty = ""
+  let hoverTown = ""
+  let varValue = ""
+  let inCountyLevel = true
 
   const varColorScaleGenerator = (gd) => {
     
@@ -15,7 +19,7 @@
 
     return d3.scaleLinear()
       .domain([minVarValue, maxVarValue])
-      .range(["#FDF4FA", "#023C5E"])
+      .range(["#F9F1F8", "#015342"])
   }
 
   const changeVar = (reactiveVar) => {
@@ -26,21 +30,21 @@
 
     if(enterTownPaths){
       enterTownPaths
-        .attr("fill", d => $selectedVar[0] !== 'nothing' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
+        .attr("fill", d => $selectedVar[0] !== '請選擇變數' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
     }
 
   }
 
   $: {
 
-    $selectedVar[0] !== 'nothing' ? changeVar($selectedVar) : null
+    $selectedVar[0] !== '請選擇變數' ? changeVar($selectedVar) : null
     
   }
 
   onMount(async () => {
   // canvas dimension
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  const width = window.innerWidth * 0.95;
+  const height = window.innerHeight * 0.95;
 
   // attribute data input
   const url = "https://spreadsheets.google.com/feeds/list/1TY3eMLbH-WvXku5BLK9Nco6-u1PHj0q8Clkk06zG9eo/1/public/values?alt=json"
@@ -95,6 +99,10 @@
 
   // zoom func
   function backToCounty() {
+    // tooltip setting
+    inCountyLevel = true
+    document.querySelector(".town-tooltip").style.display = "none"
+
     const t = d3.transition().duration(800)
 
     twProjection.scale(10000).translate([width / 2, height / 2])
@@ -113,6 +121,10 @@
   }
 
   function countyZoom(COUNTYID) {
+    // tootip hover setting
+    inCountyLevel = false
+    document.querySelector(".county-tooltip").style.display = "none"
+
     const county = twCountyFeatures.find(function (d) { return d.properties.COUNTYID === COUNTYID })
     const countyTowns = twTownFeatures.filter(function (d) { return d.properties.COUNTYID === COUNTYID })
 
@@ -125,13 +137,15 @@
         .attr("id", d => d.properties['TOWNID'])
         .attr("class", "town")
         .attr("d", twGeoPath)
-        .attr("fill", d => $selectedVar[0] !== 'nothing' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
+        .attr("fill", d => $selectedVar[0] !== '請選擇變數' ? varColorScale(mapSelectedSheetData.get(d.properties['TOWNID'])) : "#25877F")
         .attr("opacity", 0)
         .on("click", function () { backToCounty() })
+        .on("mouseover", handleTownMouseOver)
+        .on("mouseout", handleTownMouseOut)
 
 
     twProjection.fitExtent(
-        [[30, 30], [width - 30, height - 30]],
+        [[130, 130], [width - 130, height - 130]],
         county
     )
 
@@ -156,10 +170,27 @@
   // mouse 
 
   function handleCountyMouseOver(d) {
-    d3.select(this)
+    if (inCountyLevel) {
+     document.querySelector(".county-tooltip").style.display = "block"
+     hoverCounty = d3.select(this).data()[0]["properties"]["COUNTYNAME"] 
+    }
   }
 
   function handleCountyMouseOut(d) {
+    d3.select(this)
+  }
+
+  function handleTownMouseOver(d) {
+    if (!inCountyLevel) {
+    document.querySelector(".town-tooltip").style.display = "block"
+
+    const hoverTownProperty = d3.select(this).data()[0]["properties"]
+    hoverTown = hoverTownProperty["COUNTYNAME"] + hoverTownProperty["TOWNNAME"]
+    varValue = $selectedVar[0] !== '請選擇變數' ? mapSelectedSheetData.get(hoverTownProperty['TOWNID']) : ""
+    }
+  }
+
+  function handleTownMouseOut(d) {
     d3.select(this)
   }
 
@@ -168,12 +199,66 @@
 <div class="interactive-map">
   <svg id ="tw-map"></svg>
 </div>
+<div class="tooltip">
+  <div class="county-tooltip">
+     <h2>{hoverCounty}</h2>
+  </div>
+  <div class="town-tooltip">
+     <p>{hoverTown}</p>
+     <p>{$selectedVar}</p>
+     <div id="var-value">
+       <p>{varValue}</p>
+     </div>
+  </div>
+</div>
 <InteractiveTool/>
 
 
 <style>
   .interactive-map{
+    z-index: 1;
     margin: 0 auto;
+  }
+  .town-tooltip{
+    display: none;
+    width: 200px;
+    top: 65%;
+    right: 10%;
+    position: fixed;
+    z-index: 2;
+    border: #25877F 1.2px solid;
+    background-color: rgba(255, 255, 255, 0.5);    
+  }
+  .town-tooltip p{
+    margin: 5% auto;
+    color: #25877F;
+    letter-spacing: 1.2px;
+    
+  }
+  .town-tooltip #var-value{
+    margin: 5% 10% 10% 10%;
+    border-top: #25877F 1.2px solid;
+    font-weight: bold;
+  }
+
+  .town-tooltip #var-value p{
+    margin-top: 10%;
+  }
+  
+  .county-tooltip{
+    display: none;
+    width: 140px;
+    top: 65%;
+    right: 10%;
+    position: fixed;
+    z-index: 2;
+    border: #25877F 1.2px solid;
+    background-color: rgba(255, 255, 255, 0.85);
+  }
+  .county-tooltip h2{
+    margin: 10% auto;
+    color: #25877F;
+    letter-spacing: 2px;
   }
 </style>
 

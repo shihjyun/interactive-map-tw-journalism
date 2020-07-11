@@ -1,10 +1,9 @@
 <script>
   import Select from 'svelte-select';
-  import { itemsList } from '../stores/MapInfo.js'
-  import { selectedVar } from '../stores/MapInfo.js'
+  import { itemsList, selectedVar } from '../stores/MapInfo.js'
 
   // select box setting
-  let inputStyles = 'border-color: #4A75B6; border-style: solid; border-width: 0 0 2px 0;'
+  let inputStyles = 'border-color: #25877F; border-style: solid; border-width: 0 0 2px 0;'
 
 
   let selectedValue = 'OOO';
@@ -22,7 +21,7 @@
 
 <div class="interactive-panel">
   <div class="slope-highlighter">
-    <p>請選擇變數：</p>
+    <p>變數選擇：</p>
     <div class="select-theme">
       <Select items={$itemsList} 
               isSearchable={false}
@@ -38,16 +37,22 @@
 </div>
 
 <style>
+.interactive-panel{
+  top: 60%;
+  right: 10%;
+  position: fixed;
+  z-index: 2;
+}
 p{
   display: inline-block;
-  font-size: 1 em;
+  font-size: 1.2 em;
   font-family: 'Noto Sans TC';
 }
 .select-theme{
   font-family: 'Noto Sans TC';
   margin: 0;
   --itemPadding: 0;
-  --inputFontSize: 1 em;
+  --inputFontSize: 1.2 em;
   --height: 1 em;
   --inputPadding: 0;
   --borderRadius: 0;
@@ -60,5 +65,6 @@ p{
 .select-theme :global(.selectContainer),
 .select-theme :global(.selectContainer input){
   --padding: 1px 1px;
+  background: none;
 }
 </style>
