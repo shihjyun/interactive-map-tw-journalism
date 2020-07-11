@@ -220,6 +220,7 @@
     margin: 0 auto;
   }
   .town-tooltip{
+    text-align: center;
     display: none;
     width: 200px;
     top: 65%;
@@ -256,6 +257,7 @@
     background-color: rgba(255, 255, 255, 0.85);
   }
   .county-tooltip h2{
+    text-align: center;
     margin: 10% auto;
     color: #25877F;
     letter-spacing: 2px;
