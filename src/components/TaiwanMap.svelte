@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
-  import * as topojson from 'topojson';
+  import * as topojson from "topojson-client";
   import InteractiveTool from "./InteractiveTool.svelte";
   import { selectedVar, itemsList } from '../stores/MapInfo.js'
   import gs2json from "../helper/gs2json.js";
